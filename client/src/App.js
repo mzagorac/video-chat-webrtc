@@ -22,14 +22,19 @@ function App() {
       socket.emit("offer", offer);
 
       socket.on("message", async (message) => {
-        console.log(message);
         if (message.offer) {
-          peerConnection.setRemoteDescription(
-            new RTCSessionDescription(message.offer)
-          );
+          const remoteDesc = new RTCSessionDescription(message.offer);
+          await peerConnection.setRemoteDescription(remoteDesc);
+          // peerConnection.setRemoteDescription(
+          //   new RTCSessionDescription(message.offer)
+          // );
           const answer = await peerConnection.createAnswer();
           await peerConnection.setLocalDescription(answer);
           socket.emit("answer", answer);
+        }
+        if (message.answer) {
+          const remoteDesc = new RTCSessionDescription(message.answer);
+          await peerConnection.setRemoteDescription(remoteDesc);
         }
       });
     })();
