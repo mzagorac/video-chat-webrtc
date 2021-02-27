@@ -10,15 +10,26 @@ const io = require("socket.io")(server, {
 });
 const PORT = process.env.PORT || 8000;
 
-io.on("connection", (socket) => {
-  console.log("Socket connected, id", socket.id);
-  //   socket.emit("message", { message: "Hello from server" });
-
-  socket.on("message", (data) => {
-    console.log(data);
-  });
-});
-
 server.listen(PORT, () => {
   console.log(`Listening on port ${PORT}`);
+});
+
+io.on("connection", (socket) => {
+  console.log("Socket connected, id", socket.id);
+
+  const rooms = io.of("/").adapter.rooms;
+  if (!rooms.get("room") || rooms.get("room").size < 2) {
+    socket.join("room");
+  }
+
+  console.log(Array.from(rooms.get("room")));
+
+  socket.on("offer", (offer) => {
+    socket.to("room").emit("message", { offer });
+    console.log(offer);
+  });
+  socket.on("answer", (answer) => {
+    socket.to("room").emit("message", { answer });
+    console.log(answer);
+  });
 });

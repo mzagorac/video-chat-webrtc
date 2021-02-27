@@ -19,7 +19,19 @@ function App() {
       const offer = await peerConnection.createOffer();
       await peerConnection.setLocalDescription(offer);
 
-      socket.emit("message", { offer: offer });
+      socket.emit("offer", offer);
+
+      socket.on("message", async (message) => {
+        console.log(message);
+        if (message.offer) {
+          peerConnection.setRemoteDescription(
+            new RTCSessionDescription(message.offer)
+          );
+          const answer = await peerConnection.createAnswer();
+          await peerConnection.setLocalDescription(answer);
+          socket.emit("answer", answer);
+        }
+      });
     })();
 
     // (async function () {
